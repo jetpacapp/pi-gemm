@@ -22,8 +22,8 @@ You have to run the program as 'su', so that the library can get direct access t
 
 All code is under the BSD three-clause license, included in this folder as LICENSE.
 
-The ccv2010.ntwk and ccv2012.ntwk network models were converted from files created as part of the [LibCCV project](http://libccv.org/) and are licensed under the Creative Commons Attribution 4.0 International License. To view a copy of this license, visit [http://creativecommons.org/licenses/by/4.0/](http://creativecommons.org/licenses/by/4.0/).
-
 ## Credits
 
 Written by [Pete Warden](https://twitter.com/petewarden) at Jetpac Inc.
+
+Thanks to [eman](http://www.raspberrypi.org/forums/viewtopic.php?f=33&t=77231) on the Pi forums for the SHA-256 examples, [Andrew Holme](http://www.aholme.co.uk/) for creating the Fourier library, [Herman Hermitage](https://github.com/hermanhermitage/videocoreiv-qpu) for his QPU documentation work, and Broadcom for releasing the hardware specifications of their GPU! 
