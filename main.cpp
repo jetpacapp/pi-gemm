@@ -198,16 +198,16 @@ void qpu_cblas_sgemm(
   unsigned ret = execute_qpu(NUM_QPUS, messageInputGpu, 1, 10000);
 
   // Uncomment this if you want to display the rDebugOutput register value after executing the program
-//  for (int i=0; i < NUM_QPUS; i++) {
-//    const size_t currentDebugOffset = (i * debugCount * sizeof(uint32_t));
-//    uint32_t* currentDebugArm = (uint32_t*)(debugBaseArm + currentDebugOffset);
-//    for (int index = 0; index < debugCount; index += 1) {
-//      fprintf(stderr, "%d:%d=%f (0x%08x, %d)\n", i, index,
-//        *(float*)(&currentDebugArm[index]),
-//        currentDebugArm[index],
-//        currentDebugArm[index]);
-//    }
-//  }
+  for (int i=0; i < NUM_QPUS; i++) {
+    const size_t currentDebugOffset = (i * debugCount * sizeof(uint32_t));
+    uint32_t* currentDebugArm = (uint32_t*)(debugBaseArm + currentDebugOffset);
+    for (int index = 0; index < debugCount; index += 1) {
+      fprintf(stderr, "%d:%d=%f (0x%08x, %d)\n", i, index,
+        *(float*)(&currentDebugArm[index]),
+        currentDebugArm[index],
+        currentDebugArm[index]);
+    }
+  }
 
   unmapmem(armMemoryBase, totalByteCount);
   mem_unlock(gpuMemoryHandle);

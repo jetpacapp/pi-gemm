@@ -8,6 +8,10 @@ define(`raReadUniform', `ra32')
 define(`rbReadUniform', `rb32')
 define(`raZero', `ra39')
 define(`rbZero', `rb39')
+define(`raTmu0S', `ra56')
+define(`rbTmu0S', `rb56')
+define(`raTmu1S', `ra60')
+define(`rbTmu1S', `rb60')
 
 # Macro argument constants
 define(`MODEW_32_BIT', 0)
