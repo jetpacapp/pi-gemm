@@ -314,115 +314,112 @@ or.ldtmu0 ra39, ra39, ra39; nop
 add rCurrentA, rCurrentA, rAccum0; nop
 or rA112to127, r4, 0; nop
 
-# Load just the VPM rows we need from B
-ldi rAccum1, 15
-add rAccum0, rElementsRemaining, rAccum1; nop
-shr rAccum0, rAccum0, 4; nop
-ldi rAccum1, VPM_DMA_LOAD_SETUP_NROWS_SHIFT
-shl rAccum1, rAccum0, rAccum1; nop
-define(`MPITCH', 2)
-define(`ROWLEN', 16)
-define(`NROWS', 0)
-define(`VPITCH', 1)
-define(`ADDRY', 0)
-define(`ADDRX', 0)
-ldi rAccum0, VPM_DMA_LOAD_SETUP_VALUE(MODEW_32_BIT, MPITCH, ROWLEN, NROWS, VPITCH, NOT_VERT, ADDRY, ADDRX)
-or rAccum0, rAccum0, rDMALoadAddrY; nop
-or ra49, rAccum0, rAccum1; nop
-
-MUTEX_ACQUIRE()
-VPM_DMA_LOAD_START(rCurrentB)
-MUTEX_RELEASE()
-
-# There's some magic in the way we exclude the off-the-end values here.
-# The QPUs don't have much in the way of component selection within the 16-float
-# vectors they operate on, so I have to fake it by subtracting from the base mask
-# we set up earlier. It's a linear ramp of indexes for each component, 0 to 15,
-# and by subtracting the wanted number and then shifting right 31 bits, we end
-# up with either 0 or -1 (0xffffffff) in each component vector, depending on
-# their position. I then use that to mask out the components we don't care about.
 ldi rMaskShift, 31
 ldi rElementsPerVector, 16
 
-define(`NUM', VECTORS_PER_PASS)
-define(`STRIDE', 1)
-define(`ADDR', 0)
-ldi rAccum0, VPM_BLOCK_READ_SETUP_VALUE(NUM, STRIDE, IS_HORIZ, NOT_LANED, SIZE_32_BIT, ADDR)
-VPM_DMA_LOAD_WAIT_FOR_COMPLETION()
-or ra49, rAccum0, rVPMReadAddr; nop
-
+ldi rAccum0, 64
+or rAccum1, rLinearRamp, rLinearRamp; nop
+shl rAccum1, rAccum1, 2; nop
+add raTmu0S, rCurrentB, rAccum1; nop
+or.ldtmu0 ra39, ra39, ra39; nop
+add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA0to15, r4
 or rAccum1, rElementsRemaining, rElementsRemaining; nop
 sub rElementsRemaining, rAccum1, rElementsPerVector; nop
 sub rAccum0, rLinearRamp, rAccum1; nop
 asr rAccum1, rAccum0, rMaskShift; nop
-or rAccum0, rVpmReadFifo, 0;  nop
-nop rb39, r0, r0; fmul rAccum0, rA0to15, rAccum0
-and rAccum0, rAccum0, rAccum1; nop
+and rAccum2, rAccum2, rAccum1; nop
+fadd rTotal, rTotal, rAccum2; nop
 
-fadd rTotal, rTotal, rAccum0; nop
-
+ldi rAccum0, 64
+or rAccum1, rLinearRamp, rLinearRamp; nop
+shl rAccum1, rAccum1, 2; nop
+add raTmu0S, rCurrentB, rAccum1; nop
+or.ldtmu0 ra39, ra39, ra39; nop
+add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA16to31, r4
 or rAccum1, rElementsRemaining, rElementsRemaining; nop
 sub rElementsRemaining, rAccum1, rElementsPerVector; nop
 sub rAccum0, rLinearRamp, rAccum1; nop
 asr rAccum1, rAccum0, rMaskShift; nop
-or rAccum0, rVpmReadFifo, 0;  nop
-nop rb39, r0, r0; fmul rAccum0, rA16to31, rAccum0
-and rAccum0, rAccum0, rAccum1; nop
-fadd rTotal, rTotal, rAccum0; nop
+and rAccum2, rAccum2, rAccum1; nop
+fadd rTotal, rTotal, rAccum2; nop
 
+ldi rAccum0, 64
+or rAccum1, rLinearRamp, rLinearRamp; nop
+shl rAccum1, rAccum1, 2; nop
+add raTmu0S, rCurrentB, rAccum1; nop
+or.ldtmu0 ra39, ra39, ra39; nop
+add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA32to47, r4
 or rAccum1, rElementsRemaining, rElementsRemaining; nop
 sub rElementsRemaining, rAccum1, rElementsPerVector; nop
 sub rAccum0, rLinearRamp, rAccum1; nop
 asr rAccum1, rAccum0, rMaskShift; nop
-or rAccum0, rVpmReadFifo, 0;  nop
-nop rb39, r0, r0; fmul rAccum0, rA32to47, rAccum0
-and rAccum0, rAccum0, rAccum1; nop
-fadd rTotal, rTotal, rAccum0; nop
+and rAccum2, rAccum2, rAccum1; nop
+fadd rTotal, rTotal, rAccum2; nop
 
+ldi rAccum0, 64
+or rAccum1, rLinearRamp, rLinearRamp; nop
+shl rAccum1, rAccum1, 2; nop
+add raTmu0S, rCurrentB, rAccum1; nop
+or.ldtmu0 ra39, ra39, ra39; nop
+add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA48to63, r4
 or rAccum1, rElementsRemaining, rElementsRemaining; nop
 sub rElementsRemaining, rAccum1, rElementsPerVector; nop
 sub rAccum0, rLinearRamp, rAccum1; nop
 asr rAccum1, rAccum0, rMaskShift; nop
-or rAccum0, rVpmReadFifo, 0;  nop
-nop rb39, r0, r0; fmul rAccum0, rA48to63, rAccum0
-and rAccum0, rAccum0, rAccum1; nop
-fadd rTotal, rTotal, rAccum0; nop
+and rAccum2, rAccum2, rAccum1; nop
+fadd rTotal, rTotal, rAccum2; nop
 
+ldi rAccum0, 64
+or rAccum1, rLinearRamp, rLinearRamp; nop
+shl rAccum1, rAccum1, 2; nop
+add raTmu0S, rCurrentB, rAccum1; nop
+or.ldtmu0 ra39, ra39, ra39; nop
+add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA64to79, r4
 or rAccum1, rElementsRemaining, rElementsRemaining; nop
 sub rElementsRemaining, rAccum1, rElementsPerVector; nop
 sub rAccum0, rLinearRamp, rAccum1; nop
 asr rAccum1, rAccum0, rMaskShift; nop
-or rAccum0, rVpmReadFifo, 0;  nop
-nop rb39, r0, r0; fmul rAccum0, rA64to79, rAccum0
-and rAccum0, rAccum0, rAccum1; nop
-fadd rTotal, rTotal, rAccum0; nop
+and rAccum2, rAccum2, rAccum1; nop
+fadd rTotal, rTotal, rAccum2; nop
 
+ldi rAccum0, 64
+or rAccum1, rLinearRamp, rLinearRamp; nop
+shl rAccum1, rAccum1, 2; nop
+add raTmu0S, rCurrentB, rAccum1; nop
+or.ldtmu0 ra39, ra39, ra39; nop
+add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA80to95, r4
 or rAccum1, rElementsRemaining, rElementsRemaining; nop
 sub rElementsRemaining, rAccum1, rElementsPerVector; nop
 sub rAccum0, rLinearRamp, rAccum1; nop
 asr rAccum1, rAccum0, rMaskShift; nop
-or rAccum0, rVpmReadFifo, 0;  nop
-nop rb39, r0, r0; fmul rAccum0, rA80to95, rAccum0
-and rAccum0, rAccum0, rAccum1; nop
-fadd rTotal, rTotal, rAccum0; nop
+and rAccum2, rAccum2, rAccum1; nop
+fadd rTotal, rTotal, rAccum2; nop
 
+ldi rAccum0, 64
+or rAccum1, rLinearRamp, rLinearRamp; nop
+shl rAccum1, rAccum1, 2; nop
+add raTmu0S, rCurrentB, rAccum1; nop
+or.ldtmu0 ra39, ra39, ra39; nop
+add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA96to111, r4
 or rAccum1, rElementsRemaining, rElementsRemaining; nop
 sub rElementsRemaining, rAccum1, rElementsPerVector; nop
 sub rAccum0, rLinearRamp, rAccum1; nop
 asr rAccum1, rAccum0, rMaskShift; nop
-or rAccum0, rVpmReadFifo, 0;  nop
-nop rb39, r0, r0; fmul rAccum0, rA96to111, rAccum0
-and rAccum0, rAccum0, rAccum1; nop
-fadd rTotal, rTotal, rAccum0; nop
+and rAccum2, rAccum2, rAccum1; nop
+fadd rTotal, rTotal, rAccum2; nop
 
+ldi rAccum0, 64
+or rAccum1, rLinearRamp, rLinearRamp; nop
+shl rAccum1, rAccum1, 2; nop
+add raTmu0S, rCurrentB, rAccum1; nop
+or.ldtmu0 ra39, ra39, ra39; nop
+add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA112to127, r4
 or rAccum1, rElementsRemaining, rElementsRemaining; nop
 sub rElementsRemaining, rAccum1, rElementsPerVector; nop
 sub rAccum0, rLinearRamp, rAccum1; nop
 asr rAccum1, rAccum0, rMaskShift; nop
-or rAccum0, rVpmReadFifo, 0;  nop
-nop rb39, r0, r0; fmul rAccum0, rA112to127, rAccum0
-and rAccum0, rAccum0, rAccum1; nop
-fadd rTotal, rTotal, rAccum0; nop
+and rAccum2, rAccum2, rAccum1; nop
+fadd rTotal, rTotal, rAccum2; nop
 
 finish_loop_l_break:
 
