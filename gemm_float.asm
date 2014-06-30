@@ -163,7 +163,6 @@ NOP
 #NOP - Removed because next instructions can execute without side-effects
 #NOP
 
-
 # Use the TMU to read 128 values from A
 ldi rAccum0, 64
 or rAccum1, rLinearRamp, rLinearRamp; nop
@@ -209,61 +208,101 @@ or.ldtmu0 ra39, ra39, ra39; nop
 add rCurrentA, rCurrentA, rAccum0; nop
 or rA112to127, r4, 0; nop
 
-# Set up the DMA to read from the B matrix into the 8 rows of VPM memory
-define(`MPITCH', 2)
-define(`ROWLEN', 16)
-define(`NROWS', VECTORS_PER_PASS)
-define(`VPITCH', 1)
-define(`ADDRY', 0)
-define(`ADDRX', 0)
-ldi rAccum0, VPM_DMA_LOAD_SETUP_VALUE(MODEW_32_BIT, MPITCH, ROWLEN, NROWS, VPITCH, NOT_VERT, ADDRY, ADDRX)
-or ra49, rAccum0, rDMALoadAddrY; nop
+## Set up the DMA to read from the B matrix into the 8 rows of VPM memory
+#define(`MPITCH', 2)
+#define(`ROWLEN', 16)
+#define(`NROWS', VECTORS_PER_PASS)
+#define(`VPITCH', 1)
+#define(`ADDRY', 0)
+#define(`ADDRX', 0)
+#ldi rAccum0, VPM_DMA_LOAD_SETUP_VALUE(MODEW_32_BIT, MPITCH, ROWLEN, NROWS, VPITCH, NOT_VERT, ADDRY, ADDRX)
+#or ra49, rAccum0, rDMALoadAddrY; nop
+#
+#MUTEX_ACQUIRE()
+#VPM_DMA_LOAD_START(rCurrentB)
+#MUTEX_RELEASE()
+#
+#ldi rAccum0, B_BYTES_PER_PASS
+#add rCurrentB, rCurrentB, rAccum0; nop
+#
+#define(`NUM', VECTORS_PER_PASS)
+#define(`STRIDE', 1)
+#define(`ADDR', 0)
+#ldi rAccum0, VPM_BLOCK_READ_SETUP_VALUE(NUM, STRIDE, IS_HORIZ, NOT_LANED, SIZE_32_BIT, ADDR)
+#VPM_DMA_LOAD_WAIT_FOR_COMPLETION()
+#or ra49, rAccum0, rVPMReadAddr; nop
+#
+## Read 128 B values from VPM and multiply them with the corresponding A values
+#or rAccum0, rVpmReadFifo, rVpmReadFifo;  nop
+#or rAccum0, rVpmReadFifo, rVpmReadFifo; fmul rAccum1, rA0to15, rAccum0
+#fadd rTotal, rTotal, rAccum1; nop
+#
+#or rAccum0, rVpmReadFifo, rVpmReadFifo; fmul rAccum1, rA16to31, rAccum0
+#fadd rTotal, rTotal, rAccum1; nop
+#
+#or rAccum0, rVpmReadFifo, rVpmReadFifo; fmul rAccum1, rA32to47, rAccum0
+#fadd rTotal, rTotal, rAccum1; nop
+#
+#or rAccum0, rVpmReadFifo, rVpmReadFifo; fmul rAccum1, rA48to63, rAccum0
+#fadd rTotal, rTotal, rAccum1; nop
+#
+#or rAccum0, rVpmReadFifo, rVpmReadFifo; fmul rAccum1, rA64to79, rAccum0
+#fadd rTotal, rTotal, rAccum1; nop
+#
+#or rAccum0, rVpmReadFifo, rVpmReadFifo; fmul rAccum1, rA80to95, rAccum0
+#fadd rTotal, rTotal, rAccum1; nop
+#
+#or rAccum0, rVpmReadFifo, rVpmReadFifo; fmul rAccum1, rA96to111, rAccum0
+#fadd rTotal, rTotal, rAccum1; nop
+#nop rb39, r0, r0; fmul rAccum1, rA112to127, rAccum0
+#fadd rTotal, rTotal, rAccum1; nop
 
-MUTEX_ACQUIRE()
-VPM_DMA_LOAD_START(rCurrentB)
-MUTEX_RELEASE()
+add raTmu0S, rCurrentB, rAccum1; nop
+or.ldtmu0 ra39, ra39, ra39; nop
+add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA0to15, r4
+fadd rTotal, rTotal, rAccum2; nop
 
-ldi rAccum0, B_BYTES_PER_PASS
-add rCurrentB, rCurrentB, rAccum0; nop
+add raTmu0S, rCurrentB, rAccum1; nop
+or.ldtmu0 ra39, ra39, ra39; nop
+add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA16to31, r4
+fadd rTotal, rTotal, rAccum2; nop
 
-define(`NUM', VECTORS_PER_PASS)
-define(`STRIDE', 1)
-define(`ADDR', 0)
-ldi rAccum0, VPM_BLOCK_READ_SETUP_VALUE(NUM, STRIDE, IS_HORIZ, NOT_LANED, SIZE_32_BIT, ADDR)
-VPM_DMA_LOAD_WAIT_FOR_COMPLETION()
-or ra49, rAccum0, rVPMReadAddr; nop
+add raTmu0S, rCurrentB, rAccum1; nop
+or.ldtmu0 ra39, ra39, ra39; nop
+add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA32to47, r4
+fadd rTotal, rTotal, rAccum2; nop
 
-# Read 128 B values from VPM and multiply them with the corresponding A values
-or rAccum0, rVpmReadFifo, rVpmReadFifo;  nop
-or rAccum0, rVpmReadFifo, rVpmReadFifo; fmul rAccum1, rA0to15, rAccum0
-fadd rTotal, rTotal, rAccum1; nop
+add raTmu0S, rCurrentB, rAccum1; nop
+or.ldtmu0 ra39, ra39, ra39; nop
+add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA48to63, r4
+fadd rTotal, rTotal, rAccum2; nop
 
-or rAccum0, rVpmReadFifo, rVpmReadFifo; fmul rAccum1, rA16to31, rAccum0
-fadd rTotal, rTotal, rAccum1; nop
+add raTmu0S, rCurrentB, rAccum1; nop
+or.ldtmu0 ra39, ra39, ra39; nop
+add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA64to79, r4
+fadd rTotal, rTotal, rAccum2; nop
 
-or rAccum0, rVpmReadFifo, rVpmReadFifo; fmul rAccum1, rA32to47, rAccum0
-fadd rTotal, rTotal, rAccum1; nop
+add raTmu0S, rCurrentB, rAccum1; nop
+or.ldtmu0 ra39, ra39, ra39; nop
+add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA80to95, r4
+fadd rTotal, rTotal, rAccum2; nop
 
-or rAccum0, rVpmReadFifo, rVpmReadFifo; fmul rAccum1, rA48to63, rAccum0
-fadd rTotal, rTotal, rAccum1; nop
+add raTmu0S, rCurrentB, rAccum1; nop
+or.ldtmu0 ra39, ra39, ra39; nop
+add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA96to111, r4
+fadd rTotal, rTotal, rAccum2; nop
 
-or rAccum0, rVpmReadFifo, rVpmReadFifo; fmul rAccum1, rA64to79, rAccum0
-fadd rTotal, rTotal, rAccum1; nop
-
-or rAccum0, rVpmReadFifo, rVpmReadFifo; fmul rAccum1, rA80to95, rAccum0
-fadd rTotal, rTotal, rAccum1; nop
-
-or rAccum0, rVpmReadFifo, rVpmReadFifo; fmul rAccum1, rA96to111, rAccum0
+add raTmu0S, rCurrentB, rAccum1; nop
+or.ldtmu0 ra39, ra39, ra39; nop
+add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA112to127, r4
+fadd rTotal, rTotal, rAccum2; nop
 
 ldi rAccum2, ELEMENTS_PER_PASS
 add rL, rL, rAccum2; nop
 brr ra39, main_loop_l
-#NOP
-#NOP
-#NOP
-fadd rTotal, rTotal, rAccum1; nop
-nop rb39, r0, r0; fmul rAccum1, rA112to127, rAccum0
-fadd rTotal, rTotal, rAccum1; nop
+NOP
+NOP
+NOP
 
 main_loop_l_break:
 
