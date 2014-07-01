@@ -14,7 +14,8 @@ define(`ELEMENTS_PER_FINISH_PASS', 16)
 define(`ELEMENTS_PER_FINISH_PASS_MINUS_ONE', `eval(ELEMENTS_PER_FINISH_PASS - 1)')
 define(`A_BYTES_PER_FINISH_PASS', `eval(ELEMENTS_PER_FINISH_PASS * 4)')
 define(`B_BYTES_PER_FINISH_PASS', `eval(ELEMENTS_PER_FINISH_PASS * 4)')
-define(`NUM_QPUS', 8)
+define(`VPM_ROWS_PER_PASS', 1)
+define(`NUM_QPUS', 12)
 define(`ALL_DONE_SEMA', 0)
 
 # Registers used to hold uniforms
@@ -99,7 +100,7 @@ add rDebugOutput, r4, 1; nop
 # QPU number we've been given. The VPM can be viewed as a 2d table, 16 floats
 # wide and 64 rows high. In our case, we use 8 QPUs, and give each one 8 rows
 # in the VPM table.
-nop rb39, r0, r0; mul24 rTotal, rWhichQPU, VECTORS_PER_PASS
+nop rb39, r0, r0; mul24 rTotal, rWhichQPU, VPM_ROWS_PER_PASS
 ldi rAccum0, VPM_DMA_LOAD_SETUP_ADDRY_SHIFT
 shl rDMALoadAddrY, rTotal, rAccum0; nop
 ldi rAccum0, VPM_BLOCK_READ_SETUP_ADDR_SHIFT
@@ -483,6 +484,10 @@ NOP
 NOP
 
 # The number of 'down's must match the number of QPUs being run
+sema down, ALL_DONE_SEMA
+sema down, ALL_DONE_SEMA
+sema down, ALL_DONE_SEMA
+sema down, ALL_DONE_SEMA
 sema down, ALL_DONE_SEMA
 sema down, ALL_DONE_SEMA
 sema down, ALL_DONE_SEMA

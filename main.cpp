@@ -9,7 +9,7 @@
 #include "buffer.h"
 #include "mailbox.h"
 
-#define NUM_QPUS        (8)
+#define NUM_QPUS        (12)
 #define MAX_CODE_SIZE   (8192)
 #define NUM_MESSAGE_VALUES (2)
 
