@@ -191,14 +191,6 @@ NOP
 
 main_loop_l_break:
 
-# See if we have any elements to process after going through the 128-wide chunks
-or rAccum0, rK, 0; nop
-sub ra39, rL, rAccum0; nop
-brr.ne ra39, finish_loop_l_break
-NOP
-NOP
-NOP
-
 # Set up a count of how many elements we have left
 or rAccum0, rK, 0; nop
 sub rAccum0, rAccum0, rL; nop
