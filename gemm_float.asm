@@ -155,29 +155,32 @@ ldi rTotal, 0
 or rAccum1, rLinearRamp, rLinearRamp; nop
 shl rAccum1, rAccum1, 2; nop
 
+add raTmu0S, rCurrentA, rAccum1; nop
+add raTmu0S, rCurrentB, rAccum1; nop
+
+ldi rAccum0, 64
+
 ldi rL, 0
 main_loop_l:
 
 # See if we're out of 128-element chunks to process yet
-ldi rAccum0, ELEMENTS_PER_PASS_MINUS_ONE
-sub rAccum0, rK, rAccum0; nop
-sub ra39, rL, rAccum0; nop
+ldi rAccum2, ELEMENTS_PER_PASS_MINUS_ONE
+sub rAccum2, rK, rAccum2; nop
+sub ra39, rL, rAccum2; nop
 brr.ne ra39, main_loop_l_break
 NOP
 NOP
 NOP
 
-# Use the TMU to read 128 values from A
-ldi rAccum0, 64
-
-add raTmu0S, rCurrentA, rAccum1; nop
 add.ldtmu0 rCurrentA, rCurrentA, rAccum0; nop
 or rA0to15, r4, 0; nop
 
-add raTmu0S, rCurrentB, rAccum1; nop
 or.ldtmu0 ra39, ra39, ra39; nop
 add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA0to15, r4
 fadd rTotal, rTotal, rAccum2; nop
+
+add raTmu0S, rCurrentA, rAccum1; nop
+add raTmu0S, rCurrentB, rAccum1; nop
 
 ldi rAccum2, ELEMENTS_PER_PASS
 add rL, rL, rAccum2; nop
@@ -205,10 +208,8 @@ ldi rAccum0, 64
 or rAccum1, rLinearRamp, rLinearRamp; nop
 shl rAccum1, rAccum1, 2; nop
 
-add raTmu0S, rCurrentA, rAccum1; nop
 add.ldtmu0 rCurrentA, rCurrentA, rAccum0; nop
 or rA0to15, r4, 0; nop
-add raTmu0S, rCurrentB, rAccum1; nop
 or.ldtmu0 ra39, ra39, ra39; nop
 add rCurrentB, rCurrentB, rAccum0; fmul rA0to15, rA0to15, r4
 
