@@ -5,7 +5,7 @@
 include(`helpers.asm')
 
 # Constants we'll use later on
-define(`VECTORS_PER_PASS', 8)
+define(`VECTORS_PER_PASS', 1)
 define(`ELEMENTS_PER_PASS', `eval(VECTORS_PER_PASS * 16)')
 define(`ELEMENTS_PER_PASS_MINUS_ONE', `eval(ELEMENTS_PER_PASS - 1)')
 define(`A_BYTES_PER_PASS', `eval(ELEMENTS_PER_PASS * 4)')
@@ -152,6 +152,9 @@ add rCurrentB, rBAddress, rAccum0; nop
 
 ldi rTotal, 0
 
+or rAccum1, rLinearRamp, rLinearRamp; nop
+shl rAccum1, rAccum1, 2; nop
+
 ldi rL, 0
 main_loop_l:
 
@@ -161,84 +164,19 @@ sub rAccum0, rK, rAccum0; nop
 sub ra39, rL, rAccum0; nop
 brr.ne ra39, main_loop_l_break
 NOP
-#NOP - Removed because next instructions can execute without side-effects
-#NOP
+NOP
+NOP
 
 # Use the TMU to read 128 values from A
 ldi rAccum0, 64
-or rAccum1, rLinearRamp, rLinearRamp; nop
-shl rAccum1, rAccum1, 2; nop
 
 add raTmu0S, rCurrentA, rAccum1; nop
 add.ldtmu0 rCurrentA, rCurrentA, rAccum0; nop
 or rA0to15, r4, 0; nop
 
-add raTmu0S, rCurrentA, rAccum1; nop
-add.ldtmu0 rCurrentA, rCurrentA, rAccum0; nop
-or rA16to31, r4, 0; nop
-
-add raTmu0S, rCurrentA, rAccum1; nop
-add.ldtmu0 rCurrentA, rCurrentA, rAccum0; nop
-or rA32to47, r4, 0; nop
-
-add raTmu0S, rCurrentA, rAccum1; nop
-add.ldtmu0 rCurrentA, rCurrentA, rAccum0; nop
-or rA48to63, r4, 0; nop
-
-add raTmu0S, rCurrentA, rAccum1; nop
-add.ldtmu0 rCurrentA, rCurrentA, rAccum0; nop
-or rA64to79, r4, 0; nop
-
-add raTmu0S, rCurrentA, rAccum1; nop
-add.ldtmu0 rCurrentA, rCurrentA, rAccum0; nop
-or rA80to95, r4, 0; nop
-
-add raTmu0S, rCurrentA, rAccum1; nop
-add.ldtmu0 rCurrentA, rCurrentA, rAccum0; nop
-or rA96to111, r4, 0; nop
-
-add raTmu0S, rCurrentA, rAccum1; nop
-add.ldtmu0 rCurrentA, rCurrentA, rAccum0; nop
-or rA112to127, r4, 0; nop
-
 add raTmu0S, rCurrentB, rAccum1; nop
 or.ldtmu0 ra39, ra39, ra39; nop
 add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA0to15, r4
-fadd rTotal, rTotal, rAccum2; nop
-
-add raTmu0S, rCurrentB, rAccum1; nop
-or.ldtmu0 ra39, ra39, ra39; nop
-add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA16to31, r4
-fadd rTotal, rTotal, rAccum2; nop
-
-add raTmu0S, rCurrentB, rAccum1; nop
-or.ldtmu0 ra39, ra39, ra39; nop
-add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA32to47, r4
-fadd rTotal, rTotal, rAccum2; nop
-
-add raTmu0S, rCurrentB, rAccum1; nop
-or.ldtmu0 ra39, ra39, ra39; nop
-add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA48to63, r4
-fadd rTotal, rTotal, rAccum2; nop
-
-add raTmu0S, rCurrentB, rAccum1; nop
-or.ldtmu0 ra39, ra39, ra39; nop
-add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA64to79, r4
-fadd rTotal, rTotal, rAccum2; nop
-
-add raTmu0S, rCurrentB, rAccum1; nop
-or.ldtmu0 ra39, ra39, ra39; nop
-add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA80to95, r4
-fadd rTotal, rTotal, rAccum2; nop
-
-add raTmu0S, rCurrentB, rAccum1; nop
-or.ldtmu0 ra39, ra39, ra39; nop
-add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA96to111, r4
-fadd rTotal, rTotal, rAccum2; nop
-
-add raTmu0S, rCurrentB, rAccum1; nop
-or.ldtmu0 ra39, ra39, ra39; nop
-add rCurrentB, rCurrentB, rAccum0; fmul rAccum2, rA112to127, r4
 fadd rTotal, rTotal, rAccum2; nop
 
 ldi rAccum2, ELEMENTS_PER_PASS
@@ -274,55 +212,6 @@ add raTmu0S, rCurrentB, rAccum1; nop
 or.ldtmu0 ra39, ra39, ra39; nop
 add rCurrentB, rCurrentB, rAccum0; fmul rA0to15, rA0to15, r4
 
-add raTmu0S, rCurrentA, rAccum1; nop
-add.ldtmu0 rCurrentA, rCurrentA, rAccum0; nop
-or rA16to31, r4, 0; nop
-add raTmu0S, rCurrentB, rAccum1; nop
-or.ldtmu0 ra39, ra39, ra39; nop
-add rCurrentB, rCurrentB, rAccum0; fmul rA16to31, rA16to31, r4
-
-add raTmu0S, rCurrentA, rAccum1; nop
-add.ldtmu0 rCurrentA, rCurrentA, rAccum0; nop
-or rA32to47, r4, 0; nop
-add raTmu0S, rCurrentB, rAccum1; nop
-or.ldtmu0 ra39, ra39, ra39; nop
-add rCurrentB, rCurrentB, rAccum0; fmul rA32to47, rA32to47, r4
-
-add raTmu0S, rCurrentA, rAccum1; nop
-add.ldtmu0 rCurrentA, rCurrentA, rAccum0; nop
-or rA48to63, r4, 0; nop
-add raTmu0S, rCurrentB, rAccum1; nop
-or.ldtmu0 ra39, ra39, ra39; nop
-add rCurrentB, rCurrentB, rAccum0; fmul rA48to63, rA48to63, r4
-
-add raTmu0S, rCurrentA, rAccum1; nop
-add.ldtmu0 rCurrentA, rCurrentA, rAccum0; nop
-or rA64to79, r4, 0; nop
-add raTmu0S, rCurrentB, rAccum1; nop
-or.ldtmu0 ra39, ra39, ra39; nop
-add rCurrentB, rCurrentB, rAccum0; fmul rA64to79, rA64to79, r4
-
-add raTmu0S, rCurrentA, rAccum1; nop
-add.ldtmu0 rCurrentA, rCurrentA, rAccum0; nop
-or rA80to95, r4, 0; nop
-add raTmu0S, rCurrentB, rAccum1; nop
-or.ldtmu0 ra39, ra39, ra39; nop
-add rCurrentB, rCurrentB, rAccum0; fmul rA80to95, rA80to95, r4
-
-add raTmu0S, rCurrentA, rAccum1; nop
-add.ldtmu0 rCurrentA, rCurrentA, rAccum0; nop
-or rA96to111, r4, 0; nop
-add raTmu0S, rCurrentB, rAccum1; nop
-or.ldtmu0 ra39, ra39, ra39; nop
-add rCurrentB, rCurrentB, rAccum0; fmul rA96to111, rA96to111, r4
-
-add raTmu0S, rCurrentA, rAccum1; nop
-add.ldtmu0 rCurrentA, rCurrentA, rAccum0; nop
-or rA112to127, r4, 0; nop
-add raTmu0S, rCurrentB, rAccum1; nop
-or.ldtmu0 ra39, ra39, ra39; nop
-add rCurrentB, rCurrentB, rAccum0; fmul rA112to127, rA112to127, r4
-
 ldi rMaskShift, 31
 ldi rElementsPerVector, 16
 
@@ -331,55 +220,6 @@ sub rElementsRemaining, rAccum1, rElementsPerVector; nop
 sub rAccum0, rLinearRamp, rAccum1; nop
 asr rAccum1, rAccum0, rMaskShift; nop
 and rAccum2, rA0to15, rAccum1; nop
-fadd rTotal, rTotal, rAccum2; nop
-
-or rAccum1, rElementsRemaining, rElementsRemaining; nop
-sub rElementsRemaining, rAccum1, rElementsPerVector; nop
-sub rAccum0, rLinearRamp, rAccum1; nop
-asr rAccum1, rAccum0, rMaskShift; nop
-and rAccum2, rA16to31, rAccum1; nop
-fadd rTotal, rTotal, rAccum2; nop
-
-or rAccum1, rElementsRemaining, rElementsRemaining; nop
-sub rElementsRemaining, rAccum1, rElementsPerVector; nop
-sub rAccum0, rLinearRamp, rAccum1; nop
-asr rAccum1, rAccum0, rMaskShift; nop
-and rAccum2, rA32to47, rAccum1; nop
-fadd rTotal, rTotal, rAccum2; nop
-
-or rAccum1, rElementsRemaining, rElementsRemaining; nop
-sub rElementsRemaining, rAccum1, rElementsPerVector; nop
-sub rAccum0, rLinearRamp, rAccum1; nop
-asr rAccum1, rAccum0, rMaskShift; nop
-and rAccum2, rA48to63, rAccum1; nop
-fadd rTotal, rTotal, rAccum2; nop
-
-or rAccum1, rElementsRemaining, rElementsRemaining; nop
-sub rElementsRemaining, rAccum1, rElementsPerVector; nop
-sub rAccum0, rLinearRamp, rAccum1; nop
-asr rAccum1, rAccum0, rMaskShift; nop
-and rAccum2, rA64to79, rAccum1; nop
-fadd rTotal, rTotal, rAccum2; nop
-
-or rAccum1, rElementsRemaining, rElementsRemaining; nop
-sub rElementsRemaining, rAccum1, rElementsPerVector; nop
-sub rAccum0, rLinearRamp, rAccum1; nop
-asr rAccum1, rAccum0, rMaskShift; nop
-and rAccum2, rA80to95, rAccum1; nop
-fadd rTotal, rTotal, rAccum2; nop
-
-or rAccum1, rElementsRemaining, rElementsRemaining; nop
-sub rElementsRemaining, rAccum1, rElementsPerVector; nop
-sub rAccum0, rLinearRamp, rAccum1; nop
-asr rAccum1, rAccum0, rMaskShift; nop
-and rAccum2, rA96to111, rAccum1; nop
-fadd rTotal, rTotal, rAccum2; nop
-
-or rAccum1, rElementsRemaining, rElementsRemaining; nop
-sub rElementsRemaining, rAccum1, rElementsPerVector; nop
-sub rAccum0, rLinearRamp, rAccum1; nop
-asr rAccum1, rAccum0, rMaskShift; nop
-and rAccum2, rA112to127, rAccum1; nop
 fadd rTotal, rTotal, rAccum2; nop
 
 finish_loop_l_break:

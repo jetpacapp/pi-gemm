@@ -8,9 +8,7 @@ It produces a substantial speedup compared to an optimized CPU version, with the
 
 ## Getting Started
 
-Download the repo, run make, and then run `sudo ./gemm`.
-
-If you don't already have Atlas installed for comparison, you can try running `sudo apt-get install libatlas-dev` on Raspbian.
+Download the repo, `sudo apt-get install libatlas-dev m4`, run make, and then run `sudo ./gemm`.
 
 ## Notes
 
