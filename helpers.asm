@@ -12,6 +12,8 @@ define(`raTmu0S', `ra56')
 define(`rbTmu0S', `rb56')
 define(`raTmu1S', `ra60')
 define(`rbTmu1S', `rb60')
+define(`raTmuNoSwap', `ra36')
+define(`rbTmuNoSwap', `rb36')
 
 # Macro argument constants
 define(`MODEW_32_BIT', 0)

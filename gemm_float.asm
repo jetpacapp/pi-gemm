@@ -17,6 +17,7 @@ define(`B_BYTES_PER_FINISH_PASS', `eval(ELEMENTS_PER_FINISH_PASS * 4)')
 define(`VPM_ROWS_PER_PASS', 1)
 define(`NUM_QPUS', 12)
 define(`ALL_DONE_SEMA', 0)
+define(`SHOULD_DISABLE_TMU_SWAPPING', 1)
 
 # Registers used to hold uniforms
 define(`rM', ra0)
@@ -96,10 +97,14 @@ or raTmu0S, rDebugAddress, 0; nop
 or.ldtmu0 ra39, ra39, ra39; nop
 add rDebugOutput, r4, 1; nop
 
+# Turn off the automatic switching of TMU0/1 behind the scenes since we're
+# going to explicitly control calling each TMU unit.
+ldi raTmuNoSwap, SHOULD_DISABLE_TMU_SWAPPING
+
 # Set up our working area of memory in the shared VPM space, based on the
 # QPU number we've been given. The VPM can be viewed as a 2d table, 16 floats
-# wide and 64 rows high. In our case, we use 8 QPUs, and give each one 8 rows
-# in the VPM table.
+# wide and 64 rows high. In our case, we use 12 QPUs, and give each one a single
+# row in the VPM table.
 nop rb39, r0, r0; mul24 rTotal, rWhichQPU, VPM_ROWS_PER_PASS
 ldi rAccum0, VPM_DMA_LOAD_SETUP_ADDRY_SHIFT
 shl rDMALoadAddrY, rTotal, rAccum0; nop
@@ -152,25 +157,41 @@ add rCurrentB, rBAddress, rAccum0; nop
 
 ldi rTotal, 0
 
+# Constants we use for address calculations inside the loop
 or rAccum1, rLinearRamp, rLinearRamp; nop
 shl rAccum1, rAccum1, 2; nop
-
 ldi rAccum2, 64
 
+# Kick off eight vector fetches (each of 16 floats) through the TMUs.
+# We explicitly control which TMU is used, so four are fired off on TMU 0, and
+# four on TMU1. This is the maximum number we can keep in-flight at a time.
 add raTmu0S, rCurrentA, rAccum1; nop
-add raTmu0S, rCurrentB, rAccum1; nop
+add raTmu1S, rCurrentB, rAccum1; nop
 
 add rCurrentA, rCurrentA, rAccum2; nop
 add rCurrentB, rCurrentB, rAccum2; nop
 
 add raTmu0S, rCurrentA, rAccum1; nop
-add raTmu0S, rCurrentB, rAccum1; nop
+add raTmu1S, rCurrentB, rAccum1; nop
+
+add rCurrentA, rCurrentA, rAccum2; nop
+add rCurrentB, rCurrentB, rAccum2; nop
+
+add raTmu0S, rCurrentA, rAccum1; nop
+add raTmu1S, rCurrentB, rAccum1; nop
+
+add rCurrentA, rCurrentA, rAccum2; nop
+add rCurrentB, rCurrentB, rAccum2; nop
+
+add raTmu0S, rCurrentA, rAccum1; nop
+add raTmu1S, rCurrentB, rAccum1; nop
 
 add rCurrentA, rCurrentA, rAccum2; nop
 add rCurrentB, rCurrentB, rAccum2; nop
 
 ldi rL, 0
 
+# Do an initial check if we have too few elements for a full pass.
 ldi rAccum0, ELEMENTS_PER_PASS_MINUS_ONE
 sub rAccum0, rK, rAccum0; nop
 sub ra39, rL, rAccum0; nop
@@ -179,13 +200,19 @@ NOP
 NOP
 NOP
 
+# This is the section that handles multiplying the A and B vectors together,
+# and adding them to the total.
 main_loop_l:
 
+# We read a pending A result from the queue, and then immediately fire off the
+# next memory fetch, to get the maximum concurrency.
 or.ldtmu0 ra39, ra39, ra39; nop
 add raTmu0S, rCurrentA, rAccum1; nop
 or rA0to15, r4, 0; nop
-add.ldtmu0 rCurrentA, rCurrentA, rAccum2; nop
-add raTmu0S, rCurrentB, rAccum1; nop
+
+# Now we pull the values from B, and fire off the next fetch.
+add.ldtmu1 rCurrentA, rCurrentA, rAccum2; nop
+add raTmu1S, rCurrentB, rAccum1; nop
 add rCurrentB, rCurrentB, rAccum2; fmul rAccum0, rA0to15, r4
 fadd rTotal, rTotal, rAccum0; nop
 
@@ -209,13 +236,26 @@ ldi rAccum0, 64
 or rAccum1, rLinearRamp, rLinearRamp; nop
 shl rAccum1, rAccum1, 2; nop
 
+# We pull the next two fetches from A and B, and later we'll mask the unneeded
+# elements of the vectors out, to handle row lengths that aren't multiples of 16.
 add.ldtmu0 rCurrentA, rCurrentA, rAccum2; nop
 or rA0to15, r4, 0; nop
-or.ldtmu0 ra39, ra39, ra39; nop
+or.ldtmu1 ra39, ra39, ra39; nop
 add rCurrentB, rCurrentB, rAccum2; fmul rA0to15, rA0to15, r4
 
+# We actually have been firing off memory fetches ahead of where we are, so we
+# need to consume and discard six vectors. This means we're reading off the end
+# of the matrix on the last row, which in theory could cause a memory fault,
+# but because we're dealing with contiguous physical memory addresses at the
+# hardware level, in practice it's not a problem.
 or.ldtmu0 ra39, ra39, ra39; nop
+or.ldtmu1 ra39, ra39, ra39; nop
+
 or.ldtmu0 ra39, ra39, ra39; nop
+or.ldtmu1 ra39, ra39, ra39; nop
+
+or.ldtmu0 ra39, ra39, ra39; nop
+or.ldtmu1 ra39, ra39, ra39; nop
 
 ldi rMaskShift, 31
 ldi rElementsPerVector, 16
