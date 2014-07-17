@@ -162,6 +162,13 @@ add raTmu0S, rCurrentB, rAccum1; nop
 
 add rCurrentA, rCurrentA, rAccum2; nop
 add rCurrentB, rCurrentB, rAccum2; nop
+
+add raTmu0S, rCurrentA, rAccum1; nop
+add raTmu0S, rCurrentB, rAccum1; nop
+
+add rCurrentA, rCurrentA, rAccum2; nop
+add rCurrentB, rCurrentB, rAccum2; nop
+
 ldi rL, 0
 
 ldi rAccum0, ELEMENTS_PER_PASS_MINUS_ONE
@@ -208,6 +215,9 @@ add.ldtmu0 rCurrentA, rCurrentA, rAccum2; nop
 or rA0to15, r4, 0; nop
 or.ldtmu0 ra39, ra39, ra39; nop
 add rCurrentB, rCurrentB, rAccum2; fmul rA0to15, rA0to15, r4
+
+or.ldtmu0 ra39, ra39, ra39; nop
+or.ldtmu0 ra39, ra39, ra39; nop
 
 ldi rMaskShift, 31
 ldi rElementsPerVector, 16
