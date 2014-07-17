@@ -189,11 +189,9 @@ add raTmu0S, rCurrentB, rAccum1; nop
 add rCurrentB, rCurrentB, rAccum2; fmul rAccum0, rA0to15, r4
 fadd rTotal, rTotal, rAccum0; nop
 
-ldi rAccum0, ELEMENTS_PER_PASS
-add rL, rL, rAccum0; nop
+sub rL, rL, -16; nop
 
-ldi rAccum0, ELEMENTS_PER_PASS_MINUS_ONE
-sub rAccum0, rK, rAccum0; nop
+sub rAccum0, rK, 15; nop
 sub ra39, rL, rAccum0; nop
 brr.ns ra39, main_loop_l
 NOP
